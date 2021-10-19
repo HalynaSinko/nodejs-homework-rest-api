@@ -1,4 +1,4 @@
-const Contacts = require("../model");
+const Contacts = require("../repository/contacts");
 
 const getAllContacts = async (req, res, next) => {
   try {
@@ -13,7 +13,9 @@ const getContactById = async (req, res, next) => {
   try {
     const contact = await Contacts.getContactById(req.params.contactId);
     if (contact) {
-      res.status(200).json({ status: "success", code: 200, data: { contact } });
+      return res
+        .status(200)
+        .json({ status: "success", code: 200, data: { contact } });
     }
     return res
       .status(404)
@@ -49,7 +51,7 @@ const removeContact = async (req, res, next) => {
   }
 };
 
-const fullUpdateContact = async (req, res, next) => {
+const updateContact = async (req, res, next) => {
   try {
     const contact = await Contacts.updateContact(
       req.params.contactId,
@@ -68,12 +70,14 @@ const fullUpdateContact = async (req, res, next) => {
   }
 };
 
-const partialUpdateContact = async (req, res, next) => {
+const updateStatusContact = async (req, res, next) => {
+  console.log(req.params.contactId);
   try {
     const contact = await Contacts.updateContact(
       req.params.contactId,
       req.body
     );
+    console.log(contact);
     if (contact) {
       return res
         .status(200)
@@ -91,7 +95,7 @@ module.exports = {
   getAllContacts,
   getContactById,
   addNewContact,
-  fullUpdateContact,
-  partialUpdateContact,
+  updateContact,
+  updateStatusContact,
   removeContact,
 };
