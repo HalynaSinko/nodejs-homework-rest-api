@@ -65,8 +65,9 @@ const logout = async (req, res, next) => {
   return res.status(HttpCode.NO_CONTENT).json({});
 };
 
-const getCurrentUser = async (req, res, next) => {
+const getCurrentUser = (req, res, next) => {
   const user = req.user;
+  console.log(user);
   return res.status(HttpCode.OK).json({
     status: "success",
     code: HttpCode.OK,
@@ -77,4 +78,25 @@ const getCurrentUser = async (req, res, next) => {
   });
 };
 
-module.exports = { signup, login, logout, getCurrentUser };
+const updateUserSubscription = async (req, res, next) => {
+  const id = req.user._id;
+  const subscription = req.body.subscription;
+  const user = await Users.updateSubscription(id, subscription);
+  console.log(user);
+  return res.status(HttpCode.OK).json({
+    status: "success",
+    code: HttpCode.OK,
+    data: {
+      email: user.email,
+      subscription: user.subscription,
+    },
+  });
+};
+
+module.exports = {
+  signup,
+  login,
+  logout,
+  getCurrentUser,
+  updateUserSubscription,
+};
