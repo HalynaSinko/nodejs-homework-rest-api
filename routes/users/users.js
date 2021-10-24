@@ -6,18 +6,20 @@ const {
   login,
   logout,
   getCurrentUser,
+  updateUserSubscription,
 } = require("../../controllers/users.controller");
 const guard = require("../../helpers/guard");
 
-// const {
-//   validateContact,
-//   validateContactId,
-//   validateStatusContact,
-// } = require("./validation");
+const {
+  validateSignupUser,
+  validateLoginUser,
+  validateUpdateSubscription,
+} = require("./validation");
 
-router.post("/signup", signup);
-router.post("/login", login);
+router.post("/signup", validateSignupUser, signup);
+router.post("/login", validateLoginUser, login);
 router.post("/logout", guard, logout);
 router.get("/current", guard, getCurrentUser);
+router.patch("/", guard, validateUpdateSubscription, updateUserSubscription);
 
 module.exports = router;

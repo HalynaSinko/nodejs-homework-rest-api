@@ -1,54 +1,60 @@
 const Joi = require("joi");
 Joi.objectId = require("joi-objectid")(Joi);
 
-// const { ValidLengthContactName } = require("../../config/constants");
+const {
+  ValidLengthUserName,
+  ValidLengthPassword,
+} = require("../../config/constants");
 
-// const patternContact = "^\\(\\d{3}\\)\\s\\d{3}-\\d{4}$";
-// const patternName = "\\w+\\s\\w+";
+const patternName = "\\w+\\s\\w+";
+const patternPassword = "\\S+";
 
-// const schemaContact = Joi.object({
-//   name: Joi.string()
-//     .pattern(new RegExp(patternName))
-//     .min(ValidLengthContactName.MIN_LENGTH)
-//     .max(ValidLengthContactName.MAX_LENGTH)
-//     .required(),
-//   email: Joi.string().email().required(),
-//   phone: Joi.string().pattern(new RegExp(patternContact)).required(),
-//   favorite: Joi.boolean().optional(),
-// });
+const schemaSignupUser = Joi.object({
+  name: Joi.string()
+    .pattern(new RegExp(patternName))
+    .min(ValidLengthUserName.MIN_LENGTH)
+    .max(ValidLengthUserName.MAX_LENGTH),
+  email: Joi.string().email().required(),
+  password: Joi.string()
+    .pattern(new RegExp(patternPassword))
+    .min(ValidLengthPassword.MIN_LENGTH)
+    .required(),
+  subscription: Joi.valid("starter", "pro", "business"),
+});
 
-// // const patternId = "\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12}";
-// // .pattern(new RegExp(patternId))
+const schemaLoginUser = Joi.object({
+  email: Joi.string().email().required(),
+  password: Joi.string()
+    .pattern(new RegExp(patternPassword))
+    .min(ValidLengthPassword.MIN_LENGTH)
+    .required(),
+});
 
-// const schemaContactId = Joi.object({
-//   contactId: Joi.objectId().required(),
-// });
+const schemaUpdateSubscription = Joi.object({
+  subscription: Joi.valid("starter", "pro", "business").required(),
+});
 
-// const schemaStatusContact = Joi.object({
-//   favorite: Joi.boolean().required(),
-// });
+const validate = async (schema, obj, res, next) => {
+  try {
+    await schema.validateAsync(obj);
+    next();
+  } catch (error) {
+    res.status(400).json({
+      status: "error",
+      code: 400,
+      message: `Field ${error.message.replace(/"/g, "")}`,
+    });
+  }
+};
 
-// const validate = async (schema, obj, res, next) => {
-//   try {
-//     await schema.validateAsync(obj);
-//     next();
-//   } catch (error) {
-//     res.status(400).json({
-//       status: "error",
-//       code: 400,
-//       message: `Field ${error.message.replace(/"/g, "")}`,
-//     });
-//   }
-// };
+module.exports.validateSignupUser = async (req, res, next) => {
+  return await validate(schemaSignupUser, req.body, res, next);
+};
 
-// module.exports.validateContact = async (req, res, next) => {
-//   return await validate(schemaContact, req.body, res, next);
-// };
+module.exports.validateLoginUser = async (req, res, next) => {
+  return await validate(schemaLoginUser, req.body, res, next);
+};
 
-// module.exports.validateContactId = async (req, res, next) => {
-//   return await validate(schemaContactId, req.params, res, next);
-// };
-
-// module.exports.validateStatusContact = async (req, res, next) => {
-//   return await validate(schemaStatusContact, req.body, res, next);
-// };
+module.exports.validateUpdateSubscription = async (req, res, next) => {
+  return await validate(schemaUpdateSubscription, req.body, res, next);
+};

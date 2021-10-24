@@ -3,6 +3,15 @@ const ValidLengthContactName = {
   MAX_LENGTH: 30,
 };
 
+const ValidLengthUserName = {
+  MIN_LENGTH: 2,
+  MAX_LENGTH: 30,
+};
+
+const ValidLengthPassword = {
+  MIN_LENGTH: 6,
+};
+
 const StatusSubscription = {
   STARTER: "starter",
   PRO: "pro",
@@ -24,6 +33,8 @@ const HttpCode = {
 
 module.exports = {
   ValidLengthContactName,
+  ValidLengthUserName,
+  ValidLengthPassword,
   StatusSubscription,
   HttpCode,
 };
