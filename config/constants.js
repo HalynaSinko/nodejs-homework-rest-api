@@ -28,7 +28,19 @@ const HttpCode = {
   FORBIDDEN: 403,
   NOT_FOUND: 404,
   CONFLICT: 409,
+  TOO_MANY_REQUESTS: 429,
   INTERNAL_SERVER_ERROR: 500,
+};
+
+const VariablesRateLimit = {
+  QTY_NEEDED_MINUTES: 15,
+  MAX_QTY_REQUESTS_FROM_EACH_IP: 3,
+  LIMIT_SIZE: 10000,
+};
+
+const ConstantsRateLimit = {
+  QTY_SECONDS_IN_MINUTE: 60,
+  QTY_MILLISECONDS_IN_SECOND: 1000,
 };
 
 module.exports = {
@@ -37,4 +49,6 @@ module.exports = {
   ValidLengthPassword,
   StatusSubscription,
   HttpCode,
+  VariablesRateLimit,
+  ConstantsRateLimit,
 };
