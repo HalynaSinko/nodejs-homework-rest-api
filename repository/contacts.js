@@ -7,7 +7,7 @@ const listContacts = async (userId, query) => {
     filter,
     favorite = null,
     limit = 5,
-    offset = 0,
+    page = 1,
   } = query;
   const searchOptions = { owner: userId };
 
@@ -17,7 +17,7 @@ const listContacts = async (userId, query) => {
 
   const results = await Contact.paginate(searchOptions, {
     limit,
-    offset,
+    page,
     select: filter ? filter.split("|").join(" ") : "",
     sort: {
       ...(sortBy ? { [`${sortBy}`]: 1 } : {}),
