@@ -1,4 +1,5 @@
 const { Schema, model, SchemaTypes } = require("mongoose");
+const mongoosePaginate = require("mongoose-paginate-v2");
 
 const { ValidLengthContactName } = require("../config/constants");
 
@@ -39,6 +40,8 @@ const contactSchema = new Schema(
     toObject: { virtuals: true },
   }
 );
+
+contactSchema.plugin(mongoosePaginate);
 
 const Contact = model("contact", contactSchema);
 

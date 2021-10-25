@@ -5,7 +5,6 @@ const findById = async (id) => {
 };
 
 const findByEmail = (email) => {
-  // console.log(email);
   return User.findOne({ email });
 };
 
