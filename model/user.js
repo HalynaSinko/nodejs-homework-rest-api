@@ -3,13 +3,18 @@ const bcrypt = require("bcryptjs");
 
 const SALT_FACTOR = 6;
 const { StatusSubscription } = require("../config/constants");
+const {
+  ValidLengthUserName,
+  ValidLengthPassword,
+} = require("../config/constants");
 
 const userSchema = new Schema(
   {
     name: {
       type: SchemaTypes.String,
-      //   min: ValidLengthContactName.MIN_LENGTH,
-      //   max: ValidLengthContactName.MAX_LENGTH,
+      min: ValidLengthUserName.MIN_LENGTH,
+      max: ValidLengthUserName.MAX_LENGTH,
+      default: "Guest",
     },
     email: {
       type: SchemaTypes.String,
@@ -22,6 +27,7 @@ const userSchema = new Schema(
     },
     password: {
       type: SchemaTypes.String,
+      min: ValidLengthPassword.MIN_LENGTH,
       required: [true, "Set password for user"],
     },
     subscription: {
