@@ -4,6 +4,7 @@ Joi.objectId = require("joi-objectid")(Joi);
 const {
   ValidLengthUserName,
   ValidLengthPassword,
+  HttpCode,
 } = require("../../config/constants");
 
 const patternName = "\\w+\\s\\w+";
@@ -39,9 +40,9 @@ const validate = async (schema, obj, res, next) => {
     await schema.validateAsync(obj);
     next();
   } catch (error) {
-    res.status(400).json({
+    res.status(HttpCode.BAD_REQUESR).json({
       status: "error",
-      code: 400,
+      code: HttpCode.BAD_REQUESR,
       message: `Field ${error.message.replace(/"/g, "")}`,
     });
   }
