@@ -1,7 +1,7 @@
 const Joi = require("joi");
 Joi.objectId = require("joi-objectid")(Joi);
 
-const { ValidLengthContactName } = require("../../config/constant");
+const { ValidLengthContactName, HttpCode } = require("../../config/constants");
 
 const patternContact = "^\\(\\d{3}\\)\\s\\d{3}-\\d{4}$";
 const patternName = "\\w+\\s\\w+";
@@ -33,9 +33,9 @@ const validate = async (schema, obj, res, next) => {
     await schema.validateAsync(obj);
     next();
   } catch (error) {
-    res.status(400).json({
+    res.status(HttpCode.BAD_REQUESR).json({
       status: "error",
-      code: 400,
+      code: HttpCode.BAD_REQUESR,
       message: `Field ${error.message.replace(/"/g, "")}`,
     });
   }

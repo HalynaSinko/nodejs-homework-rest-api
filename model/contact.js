@@ -1,25 +1,30 @@
-const { Schema, model } = require("mongoose");
+const { Schema, model, SchemaTypes } = require("mongoose");
+const mongoosePaginate = require("mongoose-paginate-v2");
 
-const { ValidLengthContactName } = require("../config/constant");
+const { ValidLengthContactName } = require("../config/constants");
 
 const contactSchema = new Schema(
   {
     name: {
-      type: String,
+      type: SchemaTypes.String,
       min: ValidLengthContactName.MIN_LENGTH,
       max: ValidLengthContactName.MAX_LENGTH,
       required: [true, "Set name for contact"],
     },
     email: {
-      type: String,
+      type: SchemaTypes.String,
     },
     phone: {
-      type: String,
+      type: SchemaTypes.String,
       required: [true, "Set phone for contact"],
     },
     favorite: {
-      type: Boolean,
+      type: SchemaTypes.Boolean,
       default: false,
+    },
+    owner: {
+      type: SchemaTypes.ObjectId,
+      ref: "user",
     },
   },
   {
@@ -28,13 +33,15 @@ const contactSchema = new Schema(
     toJson: {
       virtuals: true,
       transform: function (doc, ret) {
-        delete ret._id
-        return ret
+        delete ret._id;
+        return ret;
       },
     },
     toObject: { virtuals: true },
   }
 );
+
+contactSchema.plugin(mongoosePaginate);
 
 const Contact = model("contact", contactSchema);
 
