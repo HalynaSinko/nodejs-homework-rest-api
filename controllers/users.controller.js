@@ -1,5 +1,8 @@
 const jwt = require("jsonwebtoken");
+const path = require("path");
+const mkdirp = require("mkdirp");
 const Users = require("../repository/users");
+const UploadFileAvatar = require("../services/file-upload");
 const { HttpCode } = require("../config/constants");
 require("dotenv").config();
 const SECRET_KEY = process.env.JWT_SECRET_KEY;
@@ -15,7 +18,12 @@ const signup = async (req, res, next) => {
     });
   }
   try {
-    const newUser = await Users.create({ email, password, name, subscription });
+    const newUser = await Users.create({
+      email,
+      password,
+      name,
+      subscription,
+    });
     return res.status(HttpCode.OK).json({
       status: "success",
       code: HttpCode.OK,
@@ -24,6 +32,7 @@ const signup = async (req, res, next) => {
         email: newUser.email,
         name: newUser.name,
         subscription: newUser.subscription,
+        avatarURL: newUser.avatarURL,
       },
     });
   } catch (error) {
@@ -34,7 +43,7 @@ const signup = async (req, res, next) => {
 const login = async (req, res, next) => {
   const { email, password } = req.body;
   const user = await Users.findByEmail(email);
-  const isValidPassword = await user.isValidPassword(password);
+  const isValidPassword = await user?.isValidPassword(password);
   if (!user || !isValidPassword) {
     return res.status(HttpCode.UNAUTHORIZED).json({
       status: "error",
@@ -93,10 +102,30 @@ const updateUserSubscription = async (req, res, next) => {
   });
 };
 
+const uploadAvatar = async (req, res, next) => {
+  const id = String(req.user._id);
+  const file = req.file;
+  const AVATAR_OF_USERS = process.env.AVATAR_OF_USERS;
+  const destination = path.join(AVATAR_OF_USERS, id);
+  await mkdirp(destination);
+  const uploadService = new UploadFileAvatar(destination);
+  const avatarURL = await uploadService.save(file, id);
+  await Users.updateAvatar(id, avatarURL);
+
+  return res.status(HttpCode.OK).json({
+    status: "success",
+    code: HttpCode.OK,
+    data: {
+      avatar: avatarURL,
+    },
+  });
+};
+
 module.exports = {
   signup,
   login,
   logout,
   getCurrentUser,
   updateUserSubscription,
+  uploadAvatar,
 };

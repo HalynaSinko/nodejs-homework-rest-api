@@ -2,4 +2,3 @@ node_modules
 .env
 uploads
 users-avatars
-coverage
