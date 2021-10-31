@@ -4,6 +4,11 @@ const mkdirp = require("mkdirp");
 const Users = require("../repository/users");
 const UploadFileAvatar = require("../services/file-upload");
 const { HttpCode } = require("../config/constants");
+const EmailService = require("../services/email/service");
+const { CreateSenderSendGrid } = require("../services/email/sender");
+const User = require("../model/user");
+const { CustomError } = require("../helpers/castomError");
+
 require("dotenv").config();
 const SECRET_KEY = process.env.JWT_SECRET_KEY;
 
@@ -11,45 +16,47 @@ const signup = async (req, res, next) => {
   const { name, email, password, subscription } = req.body;
   const user = await Users.findByEmail(email);
   if (user) {
-    return res.status(HttpCode.CONFLICT).json({
-      status: "error",
-      code: HttpCode.CONFLICT,
-      message: "Email in use",
-    });
+    throw new CustomError(HttpCode.CONFLICT, "Email in use");
   }
-  try {
-    const newUser = await Users.create({
-      email,
-      password,
-      name,
-      subscription,
-    });
-    return res.status(HttpCode.OK).json({
-      status: "success",
-      code: HttpCode.OK,
-      data: {
-        id: newUser.id,
-        email: newUser.email,
-        name: newUser.name,
-        subscription: newUser.subscription,
-        avatarURL: newUser.avatarURL,
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
+  //TODO: Send email for verify user
+
+  const newUser = await Users.create({
+    email,
+    password,
+    name,
+    subscription,
+  });
+
+  const emailService = new EmailService(
+    process.env.NODE_ENV,
+    new CreateSenderSendGrid()
+  );
+  const statusEmail = await emailService.sendVerifyEmail(
+    newUser.email,
+    newUser.name,
+    newUser.verifyToken
+  );
+
+  return res.status(HttpCode.OK).json({
+    status: "success",
+    code: HttpCode.OK,
+    data: {
+      id: newUser.id,
+      email: newUser.email,
+      name: newUser.name,
+      subscription: newUser.subscription,
+      avatarURL: newUser.avatarURL,
+      successEmail: statusEmail,
+    },
+  });
 };
 
 const login = async (req, res, next) => {
   const { email, password } = req.body;
   const user = await Users.findByEmail(email);
   const isValidPassword = await user?.isValidPassword(password);
-  if (!user || !isValidPassword) {
-    return res.status(HttpCode.UNAUTHORIZED).json({
-      status: "error",
-      code: HttpCode.UNAUTHORIZED,
-      message: "Invalid credentials",
-    });
+  if (!user || !isValidPassword || !user?.isVerified) {
+    throw new CustomError(HttpCode.UNAUTHORIZED, "Invalid credentials");
   }
   const id = user._id;
   const payload = { id };
@@ -121,6 +128,56 @@ const uploadAvatar = async (req, res, next) => {
   });
 };
 
+const verifyUser = async (req, res, next) => {
+  const user = await Users.findUserByVerifyToken(req.params.verifyToken);
+
+  if (user) {
+    await Users.updateTokenVerify(user._id, true, null);
+    return res.status(HttpCode.OK).json({
+      status: "success",
+      code: HttpCode.OK,
+      message: "Verification successful",
+    });
+  }
+
+  throw new CustomError(HttpCode.NOT_FOUND, "User not found");
+};
+
+const repeatEmailForVerifyUser = async (req, res, next) => {
+  const { email } = req.body;
+  const user = await Users.findByEmail(email);
+
+  if (user?.isVerified) {
+    throw new CustomError(
+      HttpCode.BAD_REQUESR,
+      "Verification has already been passed"
+    );
+  }
+
+  if (user && !user.isVerified) {
+    const { email, name, verifyToken } = user;
+
+    const emailService = new EmailService(
+      process.env.NODE_ENV,
+      new CreateSenderSendGrid()
+    );
+    const statusEmail = await emailService.sendVerifyEmail(
+      user.email,
+      user.name,
+      user.verifyToken
+    );
+    return res.status(HttpCode.OK).json({
+      status: "success",
+      code: HttpCode.OK,
+      data: {
+        message: "Verification email sent",
+      },
+    });
+  }
+
+  throw new CustomError(HttpCode.BAD_REQUESR, "Not found");
+};
+
 module.exports = {
   signup,
   login,
@@ -128,4 +185,6 @@ module.exports = {
   getCurrentUser,
   updateUserSubscription,
   uploadAvatar,
+  verifyUser,
+  repeatEmailForVerifyUser,
 };
